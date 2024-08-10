@@ -16,45 +16,46 @@ formats = {
     "Audio": ['mp3', 'flac', 'wav', 'aiff', 'ogg', 'paf', 'sd2', 'mve', 'caf']
 }
 
-def convert(param):
+def convert():
     """Конвертировать файл на основе выбранных параметров"""
     global save_dir, file_dir
-    formate = dpg.get_value("ch")
-    name = dpg.get_value("name")
-    width = dpg.get_value("w")
-    height = dpg.get_value("h")
-    
+    im_format = dpg.get_value("format")
+    im_name = dpg.get_value("name")
+    im_width = dpg.get_value("w")
+    im_height = dpg.get_value("h")
+    convert_param = dpg.get_value("parametr")
+
     print(f"""
-    1.метка: {name} ({type(name)})
-    2.формат: {formate} ({type(formate)})
-    3.ширина,высота: {(width, height)} ({type(width)}, {type(height)})
-    4.параметр:{param} ({type(param)})
+    1.метка: {im_name} ({type(im_name)})
+    2.формат: {im_format} ({type(im_format)})
+    3.ширина,высота: {(im_width, im_height)} ({type(im_width)}, {type(im_height)})
+    4.параметр:{convert_param} ({type(convert_param)})
     """)
 
-    if name and formate and width and height is not None:
+    if im_name and im_format and im_width and im_height is not None:
 
         if file_dir is None:
             file_path()
 
-        if param == "Image":
+        if convert_param == "Image":
             showinfo("Info","Converting...\nPress Enter to continue!")
             Image_convert(
                 path=file_dir, save_dir=save_dir,
-                image_name=name, image_format=formate,
-                width=width, height=height
+                image_name=im_name, image_format=im_format,
+                width=im_width, height=im_height
             )
             showinfo("Info","Converting has been compleate\nPress Enter to continue!")
-        elif param == "Video":
+        elif convert_param == "Video":
             showinfo("Info","Converting...\nPress Enter to continue!")
             Video_convert(
-                video_path=file_dir, name=name,
-                save_dir=save_dir, format=formate
+                video_path=file_dir, name=im_name,
+                save_dir=save_dir, format=im_format
             )
             showinfo("Info","Converting has been compleate\nPress Enter to continue!")
-        elif param == "Audio":
+        elif convert_param == "Audio":
             showinfo("Info","Converting...\nPress Enter to continue!")
             Audio_convert(
-                name=name, audio_format=formate,
+                name=im_name, audio_format=im_format,
                 file_path=file_dir, save_dir=save_dir
             )
             showinfo("Info","Converting has been compleate\nPress Enter to continue!")
@@ -141,23 +142,20 @@ with dpg.window(tag="conv_app"):
             """Выбор типа файла"""
             with dpg.group(horizontal=False):
                 dpg.add_text("Choice file type!")
-                p = dpg.add_combo(items=file_type, default_value="Image", callback=switch_combo, tag="fff")
+                dpg.add_combo(items=file_type, default_value="Image", callback=switch_combo, tag="parametr")
     
     with dpg.group(horizontal=False, tag='user_group'):
         """Группа взаимодействия с пользователем"""
         with dpg.group(horizontal=True):
             dpg.add_input_text(hint="Image file name", width=150, tab_input=False, no_spaces=True, tag="name")
-            dpg.add_combo(items=formats["Image"], width=150, tag="ch", default_value="Choice format")
+            dpg.add_combo(items=formats["Image"], width=150, tag="format", default_value="Choice format")
         
         with dpg.group(horizontal=True):
             dpg.add_input_int(default_value=1024, width=150, tag="w")
             dpg.add_input_int(default_value=1024, width=150, tag="h")
         
-        dpg.add_button(label="Convert", width=308, callback=lambda: convert(dpg.get_value(p)))
+        dpg.add_button(label="Convert", width=308, callback=convert)
         dpg.add_button(label="Quit", width=308, callback=lambda: dpg.destroy_context())
-    
-    # dpg.add_dummy(height=50)
-    # state = dpg.add_checkbox(label="Автоматический путь", tag='stat', default_value=False)
 
 # Инициализация
 load_file_path()
