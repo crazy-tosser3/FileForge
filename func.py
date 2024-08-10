@@ -3,35 +3,43 @@ import soundfile as sf
 from moviepy.editor import VideoFileClip
 import os
 import dearpygui.dearpygui as dpg
+from PIL import Image
 
 def Image_convert(path,save_dir,image_name,image_format,width,height):
-    """Функция для конвертации изображения"""
-    class ImageParam:
-        """Класс с параметрами изображения"""
-        def __init__(self):
-            self.width = width
-            self.height = height
-            self.format = image_format
-            self.im_label = image_name
+    try:
+        """Функция для конвертации изображения"""
+        class ImageParam:
+            """Класс с параметрами изображения"""
+            def __init__(self):
+                self.width = width
+                self.height = height
+                self.format = image_format
+                self.im_label = image_name
 
-        def size(self) -> tuple:
-            """Функция получения кортежа с размером"""
-            return (self.width, self.height)
-        
-        def label(self) -> str:
-            """Функция для палучения имени изображения"""
-            return os.path.join(f"{save_dir}", f"{self.im_label}.{self.format}")
-        
-        def extension(self) -> str:
-            """Функция для получения расширения файла"""
-            return self.format
+            def size(self) -> tuple:
+                """Функция получения кортежа с размером"""
+                return (self.width, self.height)
+            
+            def label(self) -> str:
+                """Функция для палучения имени изображения"""
+                return os.path.join(f"{save_dir}", f"{self.im_label}.{self.format}")
+            
+            def extension(self) -> str:
+                """Функция для получения расширения файла"""
+                return self.format
 
-    parameters = ImageParam()    
-    
-    img =  cv2.imread(path)
-    image = cv2.resize(img, parameters.size())
-    cv2.imwrite(parameters.label(),image)
-    print(parameters.label())
+        parameters = ImageParam()    
+        
+        img =  cv2.imread(path)
+        image = cv2.resize(img, parameters.size())
+        cv2.imwrite(parameters.label(),image)
+    except Exception:
+        with Image.open(path) as img:
+            img = img.resize(parameters.size())
+            img.save(parameters.label())
+
+    finally:   
+        print(parameters.label())
 
 
 def Video_convert(video_path,name,save_dir,format):
