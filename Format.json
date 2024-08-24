@@ -1,6 +1,0 @@
-{
-    "Image": ["png", "jpg", "jpeg","tiff","tif","bmp","jpe","ras","webp","ico"],
-    "Video": ["mp4", "mov", "mkv", "flv", "avi", "webm", "mpg","gif"],
-    "Audio": ["mp3", "flac", "wav", "aiff", "ogg", "paf", "sd2", "mve", "caf"],
-    "Document": ["pdf","doc","docx","txt","html","epub"]
-}
