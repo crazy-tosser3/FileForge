@@ -34,9 +34,12 @@ def load_formats(F_PATH):
     with open(F_PATH, 'r') as file:
         return json.load(file)
 
+setting_path = os.path.join("JSON","Setting.json")
+format_path = os.path.join("JSON", "Format.json")
+
 # Загрузка настроек и форматов из JSON файлов
-setting = load_path("Setting.json")
-formats = load_formats("Format.json")
+setting = load_path(setting_path)
+formats = load_formats(format_path)
 
 # Создание контекста для Dear PyGui
 dpg.create_context()

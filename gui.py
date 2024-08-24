@@ -39,7 +39,7 @@ class GraphicalUserInterface:
         print(self.Save_path)            
 
         self.setting["export_dir"] = self.Save_path
-        with open("Setting.json", 'w') as f:
+        with open(os.path.join("JSON","Setting.json"), 'w') as f:
             json.dump(self.setting, f, indent=4)
 
         dpg.configure_item("Save path", default_value=f"{self.Save_path}")  # Update the save directory path in the UI
