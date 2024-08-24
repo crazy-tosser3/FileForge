@@ -1,167 +1,84 @@
 import dearpygui.dearpygui as dpg
+import ctypes
 import os
-from func import *
+from gui import *
 import json
-from tkinter import filedialog
-from tkinter.messagebox import showinfo, showwarning
+from tkinter import Tk
 
-# Константы и глобальные переменные
-PATH = "Setting.json"
+# Устанавливает DPI Awareness для четкости отображения на экранах с высоким разрешением (только для Windows)
+ctypes.windll.shcore.SetProcessDpiAwareness(True)
+
+# Константы для настроек окна приложения
+ICON_PATH = os.path.join("sprite", "icon.ico")  # Путь к иконке приложения
+TITLE = str("FileForge")  # Название окна приложения
+WIDTH = 400  # Ширина окна приложения
+HEIGHT = 300  # Высота окна приложения
+
+# Глобальные переменные для директорий сохранения и выбора файла
 save_dir = None
 file_dir = None
-file_type = ["Image", "Video", "Audio"]
-formats = {
-    "Image": ["png", "jpg", "jpeg","tiff",'tif',"bmp","jpe","ras","webp"],
-    "Video": ['mp4', 'mov', 'mkv', 'flv', 'avi', 'webm', 'mpg'],
-    "Audio": ['mp3', 'flac', 'wav', 'aiff', 'ogg', 'paf', 'sd2', 'mve', 'caf']
-}
 
-def convert():
-    """Конвертировать файл на основе выбранных параметров"""
-    global save_dir, file_dir
-    im_format = dpg.get_value("format")
-    im_name = dpg.get_value("name")
-    im_width = dpg.get_value("w")
-    im_height = dpg.get_value("h")
-    convert_param = dpg.get_value("parametr")
-
-    print(f"""
-    1.метка: {im_name} ({type(im_name)})
-    2.формат: {im_format} ({type(im_format)})
-    3.ширина,высота: {(im_width, im_height)} ({type(im_width)}, {type(im_height)})
-    4.параметр:{convert_param} ({type(convert_param)})
-    """)
-
-    if im_name and im_format and im_width and im_height is not None:
-
-        if file_dir is None:
-            file_path()
-
-        if convert_param == "Image":
-            showinfo("Info","Converting...\nPress Enter to continue!")
-            Image_convert(
-                path=file_dir, save_dir=save_dir,
-                image_name=im_name, image_format=im_format,
-                width=im_width, height=im_height
-            )
-            showinfo("Info","Converting has been compleate\nPress Enter to continue!")
-        elif convert_param == "Video":
-            showinfo("Info","Converting...\nPress Enter to continue!")
-            Video_convert(
-                video_path=file_dir, name=im_name,
-                save_dir=save_dir, format=im_format
-            )
-            showinfo("Info","Converting has been compleate\nPress Enter to continue!")
-        elif convert_param == "Audio":
-            showinfo("Info","Converting...\nPress Enter to continue!")
-            Audio_convert(
-                name=im_name, audio_format=im_format,
-                file_path=file_dir, save_dir=save_dir
-            )
-            showinfo("Info","Converting has been compleate\nPress Enter to continue!")
-    else:
-        showwarning(title="Warning", message="Please, make sure all fields compleate!")
-
-def save_path():
-    """Выбрать и сохранить путь к директории"""
-    global save_dir
-    save_dir = filedialog.askdirectory()
-    save_file_path(save_dir)
-    dpg.configure_item("save_dir", default_value=save_dir)
-    print(save_dir)
-    return save_dir
-
-def file_path():
-    """Выбрать путь к файлу"""
-    global file_dir
-    file_dir = filedialog.askopenfilename()
-    print(file_dir)
-    dpg.configure_item("file", default_value=f"{file_dir}")
-    return file_dir
-
-def switch_combo(sender, app_data):
-    """Обновить комбо-бокс на основе выбранного типа файла"""
-    file_type = dpg.get_value(sender)
-    dpg.configure_item("ch", items=formats[file_type])
-    dpg.configure_item("name", hint=f"{file_type} file name")
+# Типы файлов, поддерживаемые приложением
+file_type = ['Image', 'Video', 'Audio', 'Document']
 
 def load_path(file_path):
-    """Загрузить настройки из JSON файла"""
+    """Загрузить настройки из JSON файла по указанному пути"""
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             return json.load(file)
     else:
         return {}
 
-setting = load_path(PATH)
+def load_formats(F_PATH):
+    """Загрузить поддерживаемые форматы файлов из JSON файла"""
+    with open(F_PATH, 'r') as file:
+        return json.load(file)
 
-def save_file_path(file_path):
-    """Сохранить путь к файлу в настройках"""
-    if file_path is not None:
-        setting["export_dir"] = file_path
-        with open(PATH, 'w') as f:
-            json.dump(setting, f, indent=4)
+# Загрузка настроек и форматов из JSON файлов
+setting = load_path("Setting.json")
+formats = load_formats("Format.json")
 
-def load_file_path():
-    """Загрузить сохраненный путь к файлу из настроек"""
-    global save_dir
-    if "export_dir" in setting:
-        save_dir = setting["export_dir"]
-        dpg.configure_item("save_dir", default_value=f"{setting['export_dir']}")
-        return save_dir
-
-# Настройка GUI
+# Создание контекста для Dear PyGui
 dpg.create_context()
 
-# Загрузка иконок
-width_save, height_save, channels_save, data_save = dpg.load_image(os.path.join('sprite', 'folder.png'))
+# Загрузка изображений, которые будут использоваться в интерфейсе
+width_save, height_save, channels_save, data_save = dpg.load_image(os.path.join("sprite", "folder.png"))
 width_pick, height_pick, channels_pick, data_pick = dpg.load_image(os.path.join("sprite", "pick.png"))
 
 with dpg.texture_registry():
-    """Регистрация текстур"""
+    """Регистрация текстур для использования в интерфейсе"""
     texture_id_save = dpg.add_static_texture(width_save, height_save, data_save)
     texture_id_pick = dpg.add_static_texture(width_pick, height_pick, data_pick)
 
-with dpg.window(tag="conv_app"):
-    """Главное окно GUI"""
-    with dpg.menu_bar():
-        """Верхнее меню"""
-        with dpg.menu(label='File'):
-            with dpg.group(horizontal=False):
-                dpg.add_text("Choice dir/file!")
-                with dpg.group(horizontal=True):
-                    """Выбор директории сохранения"""
-                    dpg.add_input_text(hint="Save dir", width=150, readonly=True, tag="save_dir")
-                    dpg.add_image_button(texture_tag=texture_id_save, width=width_save, height=height_save, callback=save_path)
-                with dpg.group(horizontal=True):
-                    """Выбор файла"""
-                    dpg.add_input_text(hint="File", width=150, readonly=True, tag="file")
-                    dpg.add_image_button(texture_tag=texture_id_pick, width=width_pick, height=height_pick, callback=file_path)
-        
-        with dpg.menu(label="File type"):
-            """Выбор типа файла"""
-            with dpg.group(horizontal=False):
-                dpg.add_text("Choice file type!")
-                dpg.add_combo(items=file_type, default_value="Image", callback=switch_combo, tag="parametr")
-    
-    with dpg.group(horizontal=False, tag='user_group'):
-        """Группа взаимодействия с пользователем"""
-        with dpg.group(horizontal=True):
-            dpg.add_input_text(hint="Image file name", width=150, tab_input=False, no_spaces=True, tag="name")
-            dpg.add_combo(items=formats["Image"], width=150, tag="format", default_value="Choice format")
-        
-        with dpg.group(horizontal=True):
-            dpg.add_input_int(default_value=1024, width=150, tag="w")
-            dpg.add_input_int(default_value=1024, width=150, tag="h")
-        
-        dpg.add_button(label="Convert", width=308, callback=convert)
-        dpg.add_button(label="Quit", width=308, callback=lambda: dpg.destroy_context())
+# Создание пользовательского интерфейса с использованием загруженных текстур и настроек
+user_interface = GraphicalUserInterface(
+    File_img=texture_id_pick, Save_img=texture_id_save,
+    w_save=width_save, h_save=height_save,
+    w_file=width_pick, h_file=height_pick,
+    types=file_type, settings=setting, formats=formats,
+    export_dir=save_dir, file_path=file_dir)
 
-# Инициализация
-load_file_path()
-dpg.create_viewport(title="Converter", width=345, height=100, resizable=False)
-dpg.set_primary_window("conv_app", True)
+with dpg.window(tag="main window"):
+    # Добавление элементов интерфейса в главное окно
+    user_interface.menu_bar()
+    user_interface.any_gui_ellement()
+
+# Загрузка пути к файлам (если необходимо)
+user_interface.load_file_path()
+
+# Создание окна приложения с заданными параметрами
+dpg.create_viewport(
+    title=TITLE, width=WIDTH, height=HEIGHT,
+    resizable=False, vsync=True,
+    small_icon=ICON_PATH, large_icon=ICON_PATH)
+
+# Установка главного окна приложения
+dpg.set_primary_window("main window", True)
+
+# Настройка и запуск Dear PyGui
 dpg.setup_dearpygui()
 dpg.show_viewport()
 dpg.start_dearpygui()
+
+# Уничтожение контекста при завершении работы приложения
 dpg.destroy_context()
